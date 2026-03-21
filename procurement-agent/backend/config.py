@@ -21,6 +21,18 @@ class Settings(BaseSettings):
     # Email (SendGrid)
     SENDGRID_API_KEY: Optional[str] = None
     FROM_EMAIL: str = "noreply@procurement-agent.com"
+
+    # Telegram
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
+
+    # Feature 1 — WhatsApp (Twilio)
+    TWILIO_ACCOUNT_SID:    Optional[str] = None
+    TWILIO_AUTH_TOKEN:     Optional[str] = None
+    TWILIO_WHATSAPP_FROM:  Optional[str] = "whatsapp:+14155238886"
+ 
+    # Feature 8 — Currency conversion
+    EXCHANGE_RATE_API_KEY: Optional[str] = None
+
  
     class Config:
         env_file = ".env"
