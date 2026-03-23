@@ -1,4 +1,4 @@
--- AI Procurement Agent — PostgreSQL Schema
+-- AI Procurement Agent — PostgreSQL Schema v2
 -- Run this if you prefer raw SQL over SQLAlchemy auto-create
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
     contact_person    VARCHAR(255),
     payment_terms     VARCHAR(100) DEFAULT 'Net 30',
     gst_number        VARCHAR(100),
+    -- Feature 1: notification channels
+    phone_number      VARCHAR(50),
+    telegram_chat_id  VARCHAR(100),
     is_active         BOOLEAN DEFAULT TRUE,
     created_at        TIMESTAMP DEFAULT NOW(),
     updated_at        TIMESTAMP DEFAULT NOW()
@@ -64,6 +67,11 @@ CREATE TABLE IF NOT EXISTS quotes (
     unit_price              NUMERIC(12,2),
     total_price             NUMERIC(12,2),
     currency                VARCHAR(10) DEFAULT 'INR',
+    -- Feature 8: converted INR fields
+    inr_unit_price          NUMERIC(12,2),
+    inr_total_price         NUMERIC(12,2),
+    currency_converted      BOOLEAN DEFAULT FALSE,
+    exchange_rate_note      VARCHAR(100),
     delivery_days           VARCHAR(100),
     minimum_order_qty       VARCHAR(100),
     payment_terms           VARCHAR(100),
@@ -76,8 +84,66 @@ CREATE TABLE IF NOT EXISTS quotes (
     created_at              TIMESTAMP DEFAULT NOW()
 );
 
+-- ── Feature 5: Quote Validity Tracking ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS quote_validity (
+    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    quote_id          UUID NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
+    procurement_id    UUID NOT NULL REFERENCES procurement_requests(id) ON DELETE CASCADE,
+    user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    supplier_name     VARCHAR(255),
+    valid_days        INTEGER DEFAULT 30,
+    expires_at        TIMESTAMP,
+    fetched_at        TIMESTAMP DEFAULT NOW(),
+    alert_7day_sent   BOOLEAN DEFAULT FALSE,
+    alert_1day_sent   BOOLEAN DEFAULT FALSE,
+    is_expired        BOOLEAN DEFAULT FALSE,
+    created_at        TIMESTAMP DEFAULT NOW(),
+    updated_at        TIMESTAMP DEFAULT NOW()
+);
+
+-- ── Feature 7: Orders ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS orders (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    quote_id            UUID NOT NULL REFERENCES quotes(id),
+    procurement_id      UUID NOT NULL REFERENCES procurement_requests(id),
+    supplier_name       VARCHAR(255),
+    supplier_url        VARCHAR(500),
+    order_id            VARCHAR(255),
+    invoice_number      VARCHAR(255),
+    total_amount        NUMERIC(12,2),
+    estimated_delivery  VARCHAR(255),
+    status              VARCHAR(50) DEFAULT 'placing',
+    raw                 JSONB,
+    placed_at           TIMESTAMP,
+    created_at          TIMESTAMP DEFAULT NOW()
+);
+
+-- ── Feature 10: Supplier Reliability Scores ───────────────────────────────
+CREATE TABLE IF NOT EXISTS supplier_scores (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    supplier_name       VARCHAR(255) NOT NULL,
+    supplier_url        VARCHAR(500) NOT NULL,
+    user_id             UUID REFERENCES users(id) ON DELETE CASCADE,
+    total_attempts      INTEGER DEFAULT 0,
+    successful_quotes   INTEGER DEFAULT 0,
+    failed_attempts     INTEGER DEFAULT 0,
+    orders_placed       INTEGER DEFAULT 0,
+    orders_fulfilled    INTEGER DEFAULT 0,
+    avg_response_time_s NUMERIC(8,2) DEFAULT 0,
+    avg_delivery_days   NUMERIC(6,2) DEFAULT 0,
+    price_accuracy      NUMERIC(5,2) DEFAULT 0,
+    reliability_score   NUMERIC(5,2) DEFAULT 50,
+    last_updated        TIMESTAMP DEFAULT NOW(),
+    created_at          TIMESTAMP DEFAULT NOW()
+);
+
 -- ── Indexes ───────────────────────────────────────────────────────────────
-CREATE INDEX IF NOT EXISTS idx_procurement_user    ON procurement_requests(user_id);
-CREATE INDEX IF NOT EXISTS idx_quotes_procurement  ON quotes(procurement_request_id);
-CREATE INDEX IF NOT EXISTS idx_suppliers_category  ON suppliers(category);
-CREATE INDEX IF NOT EXISTS idx_suppliers_global    ON suppliers(is_global);
+CREATE INDEX IF NOT EXISTS idx_procurement_user     ON procurement_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_procurement   ON quotes(procurement_request_id);
+CREATE INDEX IF NOT EXISTS idx_suppliers_category   ON suppliers(category);
+CREATE INDEX IF NOT EXISTS idx_suppliers_global     ON suppliers(is_global);
+CREATE INDEX IF NOT EXISTS idx_validity_user        ON quote_validity(user_id);
+CREATE INDEX IF NOT EXISTS idx_validity_expires     ON quote_validity(expires_at);
+CREATE INDEX IF NOT EXISTS idx_orders_user          ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_scores_supplier      ON supplier_scores(supplier_name);
