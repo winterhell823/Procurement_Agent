@@ -9,25 +9,24 @@ export default function AuthPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black text-white overflow-hidden">
 
-      {/* 🌈 MESH GRADIENT BACKGROUND */}
+      
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.3),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(168,85,247,0.3),transparent_40%)]" />
 
-      {/* ✨ Animated Glow Lines */}
+      
       <div className="absolute w-full h-full opacity-20 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.1),transparent)] animate-pulse" />
 
-      {/* 🤖 FLOATING PANELS */}
+      
       <FloatingPanel text="🤖 AI negotiating prices..." top="15%" left="8%" />
       <FloatingPanel text="📊 Best deal found!" top="70%" left="75%" delay={1} />
       <FloatingPanel text="⚡ Real-time supplier match" top="80%" left="20%" delay={2} />
 
-      {/* 🔥 AUTH CARD */}
+      
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="relative z-10 w-full max-w-md p-8 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_0_40px_rgba(59,130,246,0.2)]"
       >
 
-        {/* 🌟 Glow Border Effect */}
         <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none" />
 
         <h2 className="text-3xl font-bold text-center mb-2">
@@ -62,7 +61,7 @@ export default function AuthPage() {
             </div>
           )}
 
-          {/* BUTTON */}
+         
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -72,21 +71,21 @@ export default function AuthPage() {
             {isLogin ? "Sign In" : "Register"}
           </motion.button>
 
-          {/* Divider */}
+          
           <div className="flex items-center gap-3 text-gray-400 text-sm">
             <div className="flex-1 h-px bg-gray-600" />
             OR
             <div className="flex-1 h-px bg-gray-600" />
           </div>
 
-          {/* SOCIAL */}
+          
           <div className="flex gap-4">
             <SocialBtn text="Google" />
             <SocialBtn text="GitHub" />
           </div>
         </div>
 
-        {/* TOGGLE */}
+        
         <p className="text-sm text-center mt-6 text-gray-400">
           {isLogin ? "No account?" : "Already have one?"}
           <span
@@ -101,7 +100,6 @@ export default function AuthPage() {
   );
 }
 
-/* 🔥 Input */
 function Input({ placeholder, type = "text" }) {
   return (
     <input
@@ -112,7 +110,7 @@ function Input({ placeholder, type = "text" }) {
   );
 }
 
-/* 🔥 Floating Panels */
+
 function FloatingPanel({ text, top, left, delay = 0 }) {
   return (
     <motion.div
@@ -127,7 +125,7 @@ function FloatingPanel({ text, top, left, delay = 0 }) {
   );
 }
 
-/* 🔥 Social Buttons */
+
 function SocialBtn({ text }) {
   return (
     <button className="flex-1 py-2 border border-gray-600 rounded-lg hover:bg-white/10 transition">

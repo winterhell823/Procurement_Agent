@@ -7,7 +7,7 @@ export default function NewRequest() {
   return (
     <div className="min-h-screen bg-black text-white p-10">
 
-      {/* 🔥 HEADER */}
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold">AI-Powered Quote Search</h1>
         <p className="text-gray-400 mt-2">
@@ -15,7 +15,7 @@ export default function NewRequest() {
         </p>
       </div>
 
-      {/* 🔥 FORM CARD */}
+      
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -26,7 +26,7 @@ export default function NewRequest() {
           New Procurement Request
         </h2>
 
-        {/* 🔹 PRODUCT SPEC */}
+       
         <div className="mb-6">
           <label className="block mb-2 text-gray-300">
             Product Specifications
@@ -43,7 +43,7 @@ export default function NewRequest() {
           </p>
         </div>
 
-        {/* 🔹 QUANTITY */}
+        
         <div className="mb-6 flex gap-4">
           <input
             type="number"
@@ -53,7 +53,7 @@ export default function NewRequest() {
           <span className="flex items-center text-gray-400">Units</span>
         </div>
 
-        {/* 🔹 NOTES */}
+       
         <div className="mb-6">
           <textarea
             placeholder="e.g., Need by date, certifications, budget..."
@@ -62,7 +62,7 @@ export default function NewRequest() {
           />
         </div>
 
-        {/* 🔥 WHAT HAPPENS NEXT */}
+        
         <div className="bg-white/5 p-6 rounded-xl border border-white/10 mb-6">
           <h3 className="font-semibold mb-3">What happens next?</h3>
 
@@ -74,7 +74,7 @@ export default function NewRequest() {
           </ul>
         </div>
 
-        {/* 🔥 ACTION BUTTONS */}
+        
         <div className="flex justify-end gap-4">
 
           <button
@@ -95,7 +95,7 @@ export default function NewRequest() {
         </div>
       </motion.div>
 
-      {/* 🔥 FOOTER */}
+      
       <div className="text-center text-gray-500 text-sm mt-16">
         © 2026 ProcureAI
       </div>

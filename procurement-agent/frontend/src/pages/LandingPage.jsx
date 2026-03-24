@@ -7,7 +7,7 @@ export default function LandingPage() {
   return (
     <div className="bg-black text-white min-h-screen overflow-x-hidden">
 
-      {/* 🔥 NAVBAR */}
+      
       <div className="flex justify-between items-center px-10 py-6">
         <h1 className="text-xl font-bold">
           Procure<span className="text-blue-400">AI</span>
@@ -21,10 +21,10 @@ export default function LandingPage() {
         </button>
       </div>
 
-      {/* 🚀 HERO */}
+     
       <div className="grid md:grid-cols-2 px-10 mt-20 items-center">
 
-        {/* LEFT TEXT */}
+        
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -60,17 +60,17 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        {/* RIGHT VISUAL */}
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="relative flex justify-center mt-10 md:mt-0"
         >
-          {/* Glow */}
+          
           <div className="absolute w-[350px] h-[350px] bg-blue-500 opacity-20 blur-3xl rounded-full" />
 
-          {/* Main Card */}
+          
           <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 w-[320px] rounded-2xl shadow-xl">
             <h3 className="mb-3 font-semibold">AI Workflow</h3>
 
@@ -82,10 +82,10 @@ export default function LandingPage() {
         </motion.div>
       </div>
 
-      {/* 👇 SCROLL SPACE (IMPORTANT for animations) */}
+      
       <div className="h-[150px]" />
 
-      {/* 🔥 FEATURES (SCROLL ANIMATED) */}
+      
       <motion.div
         initial="hidden"
         whileInView="show"
@@ -101,7 +101,7 @@ export default function LandingPage() {
   );
 }
 
-/* 🔥 Animation Variants */
+
 const container = {
   hidden: {},
   show: {
@@ -116,7 +116,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-/* 🔥 Step Component */
+
 function Step({ text, delay = 0 }) {
   return (
     <motion.div
@@ -130,7 +130,7 @@ function Step({ text, delay = 0 }) {
   );
 }
 
-/* 🔥 Feature Card */
+
 function Feature({ title, desc }) {
   return (
     <motion.div

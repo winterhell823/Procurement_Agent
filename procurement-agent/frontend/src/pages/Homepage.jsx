@@ -6,10 +6,10 @@ export default function Homepage() {
   return (
     <div className="bg-black text-white min-h-screen relative overflow-x-hidden">
 
-      {/* 🔥 BACKGROUND GLOW */}
+      
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.15),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(168,85,247,0.15),transparent_40%)]" />
 
-      {/* 🔥 NAVBAR */}
+      
       <div className="flex justify-between items-center px-10 py-6 border-b border-white/10">
         <h1 className="text-xl font-bold">
           Procure<span className="text-blue-400">AI</span>
@@ -32,10 +32,10 @@ export default function Homepage() {
         </div>
       </div>
 
-      {/* 🚀 HERO */}
+      
       <div className="px-10 mt-16 grid md:grid-cols-2 gap-10 items-center">
 
-        {/* LEFT */}
+        
         <div>
           <h1 className="text-5xl md:text-6xl font-bold leading-tight">
             Stop Wasting Time on
@@ -50,7 +50,7 @@ export default function Homepage() {
             Save 15-20 hours per week and reduce procurement costs by up to 40%.
           </p>
 
-          {/* ✅ CTA BUTTONS */}
+          
           <div className="flex gap-4 mt-8">
 
             <button
@@ -70,11 +70,11 @@ export default function Homepage() {
           </div>
         </div>
 
-        {/* RIGHT */}
+        
         <div className="space-y-4">
-          <GlassCard text="🤖 AI agent scanning 15 suppliers..." />
-          <GlassCard text="📊 Comparing prices across vendors" />
-          <GlassCard text="✅ Best quote found: $2,450!" />
+          <GlassCard text=" AI agent scanning 15 suppliers..." />
+          <GlassCard text=" Comparing prices across vendors" />
+          <GlassCard text=" Best quote found: $2,450!" />
 
           <div className="grid grid-cols-3 gap-4 mt-6">
             <Stat value="15-20 hrs" label="Saved/week" />
@@ -84,7 +84,7 @@ export default function Homepage() {
         </div>
       </div>
 
-      {/* 🔥 HOW IT WORKS */}
+      
       <SectionTitle title="How It Works" />
 
       <div className="grid md:grid-cols-2 gap-6 px-10">
@@ -94,7 +94,7 @@ export default function Homepage() {
         <FeatureCard title="Auto-Outreach" desc="AI emails best supplier automatically." />
       </div>
 
-      {/* 🔥 WHY CHOOSE */}
+      
       <SectionTitle title="Why Choose ProcureAI?" />
 
       <div className="grid md:grid-cols-4 gap-6 px-10">
@@ -104,7 +104,7 @@ export default function Homepage() {
         <FeatureCard title="Audit Trail" desc="Complete documentation." />
       </div>
 
-      {/* 🔥 TESTIMONIALS */}
+      
       <SectionTitle title="Trusted by SMBs Worldwide" />
 
       <div className="grid md:grid-cols-3 gap-6 px-10">
@@ -113,7 +113,7 @@ export default function Homepage() {
         <Testimonial text="Best tool for SMBs!" name="Emily Park" />
       </div>
 
-      {/* 🔥 FOOTER */}
+      
       <div className="text-center text-gray-500 text-sm py-10 border-t border-white/10 mt-20">
         © 2026 ProcureAI
       </div>

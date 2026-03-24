@@ -10,16 +10,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🌐 PUBLIC */}
+        
         <Route path="/" element={<LandingPage />} />
 
-        {/* 🔐 AUTH */}
+        
         <Route path="/auth" element={<AuthPage />} />
 
-        {/* 🏠 AFTER LOGIN */}
+        
         <Route path="/home" element={<Homepage />} />
 
-        {/* 📊 MAIN APP */}
+       
         <Route path="/dashboard" element={<Dashboard />} />
         
 <Route path="/new-request" element={<NewRequest />} />

@@ -10,7 +10,7 @@ export default function Dashboard() {
 
       <div className="px-10 mt-8">
 
-        {/* 🔥 HEADER */}
+        
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Procurement Dashboard</h1>
@@ -24,14 +24,14 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* 🔥 STATS */}
+      
         <div className="grid md:grid-cols-3 gap-6 mt-8">
           <StatCard icon={<FaDollarSign />} title="Total Savings" value="$290.25" />
           <StatCard icon={<FaClipboardList />} title="Active Requests" value="3" />
           <StatCard icon={<FaChartBar />} title="Avg Quotes/Request" value="5.0" />
         </div>
 
-        {/* 🔥 TABS */}
+        
         <div className="flex gap-6 mt-10 text-gray-400 border-b border-white/10 pb-3">
           <span className="text-white border-b-2 border-blue-500 pb-1 cursor-pointer">
             All Requests (3)
@@ -40,10 +40,10 @@ export default function Dashboard() {
           <span className="cursor-pointer">Processing (1)</span>
         </div>
 
-        {/* 🔥 REQUEST LIST */}
+        
         <div className="space-y-6 mt-6">
 
-          {/* ✅ COMPLETED CARD */}
+          
           <RequestCard
             status="completed"
             title="500 units of industrial gloves, size L, nitrile"
@@ -62,7 +62,7 @@ export default function Dashboard() {
             unit="$0.57/unit"
           />
 
-          {/* 🔄 PROCESSING */}
+          
           <ProcessingCard
             title="250 hard hats, Class E, yellow"
             date="Mar 17, 2026 • 9:15 AM"
@@ -74,7 +74,7 @@ export default function Dashboard() {
   );
 }
 
-////////////////////////////////////////////////////
+
 
 function StatCard({ icon, title, value }) {
   return (
@@ -91,7 +91,7 @@ function StatCard({ icon, title, value }) {
   );
 }
 
-////////////////////////////////////////////////////
+
 
 function RequestCard({ status, title, date, supplier, price, unit }) {
   return (
@@ -121,7 +121,6 @@ function RequestCard({ status, title, date, supplier, price, unit }) {
   );
 }
 
-////////////////////////////////////////////////////
 
 function ProcessingCard({ title, date }) {
   return (
@@ -136,7 +135,7 @@ function ProcessingCard({ title, date }) {
       <p className="text-gray-500 text-sm">{date}</p>
 
       <p className="mt-4 text-blue-400">
-        🤖 AI is searching suppliers...
+         AI is searching suppliers...
       </p>
 
       <p className="text-gray-500 text-sm">
