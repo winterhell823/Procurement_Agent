@@ -11,7 +11,7 @@ from datetime import datetime
 
 from tinyfish import TinyFish, EventType, RunStatus  # pip install tinyfish
 from config import settings
-from .llm_service import clean_extraction_with_llm  # We'll add later — optional cleanup
+# from .llm_service import clean_extraction_with_llm  # We'll add later — optional cleanup
 
 logger = logging.getLogger(__name__)
 
@@ -152,4 +152,5 @@ No other text outside the JSON.
     # def run_quote_task_sync(...): ...
 
 # Singleton / global instance (common in services)
-tinyfish_client = TinyFishClient()
+def get_tinyfish_client():
+    return TinyFishClient()

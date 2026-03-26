@@ -12,7 +12,7 @@ class User(Base):
 
     id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email           = Column(String(255), unique=True, nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=True)
 
     # Profile — referenced in orders.py company_profile block
     full_name       = Column(String(255), nullable=False)
@@ -21,7 +21,11 @@ class User(Base):
     company_phone   = Column(String(50),  nullable=True)
     company_address = Column(String(500), nullable=True)
     payment_terms   = Column(String(255), nullable=True)
-    gst_number      = Column(String(50),  nullable=True)   # GST / tax ID for Indian SMBs
+    gst_number      = Column(String(50),  nullable=True)   
+
+    # Google OAuth fields (NEW)
+    google_id       = Column(String(255), unique=True, nullable=True, index=True)
+    picture         = Column(String(500), nullable=True)   # Google profile picture
 
     # Access control
     is_active       = Column(Boolean, default=True,  nullable=False)

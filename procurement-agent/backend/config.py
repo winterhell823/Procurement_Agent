@@ -8,8 +8,10 @@ class Settings(BaseSettings):
 
     #Auth
     SECRET_KEY: str = ""
-    ALGORITHM: str = "HS256"
+    JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+
+    GOOGLE_CLIENT_ID: str = ""
 
     # TnyFish
     TINYFISH_API_KEY: str = ""
@@ -33,6 +35,7 @@ class Settings(BaseSettings):
  
     # Feature 8 — Currency conversion
     EXCHANGE_RATE_API_KEY: Optional[str] = None
+
 
  
     class Config:

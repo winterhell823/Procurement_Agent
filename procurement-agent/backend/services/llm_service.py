@@ -20,7 +20,9 @@ class LLMService:
 
     def __init__(self):
         if not settings.OPENAI_API_KEY:
-            raise ValueError("OPENAI_API_KEY not set in .env")
+            print("⚠️ OPENAI_API_KEY not set — LLM disabled")
+            self.client = None
+            return
         
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL or "gpt-4o"
