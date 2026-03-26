@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from services.google_auth_service import verify_google_token
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -122,7 +123,7 @@ async def login(
     result = await db.execute(select(User).where(User.email == form.username))
     user: User | None = result.scalar_one_or_none()
 
-    if not user or not pwd_ctx.verify(form.password, user.hashed_password):
+    if not user or not user.hashed_password or not pwd_ctx.verify(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account disabled")
@@ -155,3 +156,44 @@ async def update_profile(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+@router.post("/google", response_model=TokenResponse)
+class GoogleLoginRequest(BaseModel):
+    token: str
+async def google_login(
+    body: GoogleLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    token = body.get("token")
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Token missing")
+
+    # Verify token
+    user_data = verify_google_token(token)
+
+    # Check user in DB
+    result = await db.execute(select(User).where(User.email == user_data["email"]))
+    user = result.scalar_one_or_none()
+
+    # Create new user if not exists
+    if not user:
+        user = User(
+            email=user_data["email"],
+            full_name=user_data.get("name"),
+            hashed_password=None,
+            auth_provider="google"
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    # Generate JWT
+    access_token = _create_token(str(user.id))
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account disabled")
