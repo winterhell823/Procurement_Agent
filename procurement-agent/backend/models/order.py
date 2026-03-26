@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
 
-from database import Base
+from models.base import Base
 
 
 class Order(Base):

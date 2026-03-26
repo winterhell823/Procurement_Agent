@@ -61,7 +61,7 @@ def _create_token(user_id: str) -> str:
     return jwt.encode(
         {"sub": user_id, "exp": expire},
         settings.SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
+        algorithm=settings.ALGORITHM,
     )
 
 
@@ -76,7 +76,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exc

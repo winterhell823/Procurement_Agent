@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from routes import auth, prcurement, quotes, suppliers
+from routes import auth, procurement, quotes, suppliers, orders, export, analytics
 from config import settings
 from models.base import init_db
 from services.scheduler import start_scheduler, stop_scheduler
@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title = "AI Procurement Agent",
-    version = "1.0.0";
+    version = "1.0.0",
     lifespan = lifespan
 )
 
@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router,     prefix="/auth", tags=["auth"])
-app.include_router(prcurement.router, prefix="/procurement", tags=["procurement"])
+app.include_router(procurement.router, prefix="/procurement", tags=["procurement"])
 app.include_router(quotes.router, prefix="/quotes", tags=["quotes"])
 app.include_router(suppliers.router, prefix="/suppliers", tags=["suppliers"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])

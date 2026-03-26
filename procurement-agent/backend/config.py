@@ -4,6 +4,7 @@ from typing import Optional
 class Settings(BaseSettings):
     #Database
     DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/procurement"
+    DEBUG: bool = True
 
     #Auth
     SECRET_KEY: str = ""
