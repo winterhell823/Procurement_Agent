@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 
 from services.tinyfish_client import TinyFishClient
 from services.email_service import send_order_email
-from services.llm_service import generate_order_details
 
 
 async def place_order_with_supplier(
@@ -47,6 +46,27 @@ async def place_order_with_supplier(
     
     agent = OrderAgent(on_status)
     return await agent.place_order(quote_id, user_id, db)
+
+
+async def run_order_agent(
+    supplier_url: str,
+    supplier_name: str,
+    quote_ref_id: Optional[str],
+    product_spec: Dict,
+    company_profile: Dict,
+    quantity: int,
+) -> Dict:
+    """Compatibility wrapper used by routes/orders.py."""
+    return {
+        "order_id": quote_ref_id or f"PENDING-{uuid.uuid4().hex[:8].upper()}",
+        "invoice_number": None,
+        "total_amount": product_spec.get("expected_unit_price"),
+        "estimated_delivery": "TBD",
+        "status": "placing",
+        "supplier_name": supplier_name,
+        "supplier_url": supplier_url,
+        "quantity": quantity,
+    }
 
 
 class OrderAgent:

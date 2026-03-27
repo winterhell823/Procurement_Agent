@@ -1,10 +1,87 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { googleSignIn } from "../services/api";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const googleBtnRef = useRef(null);
   const navigate = useNavigate();
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const hasValidGoogleClientId =
+    typeof googleClientId === "string" &&
+    googleClientId.trim().endsWith(".apps.googleusercontent.com");
+
+  useEffect(() => {
+    const clientId = googleClientId?.trim();
+    if (!clientId || !googleBtnRef.current) return;
+    if (!hasValidGoogleClientId) {
+      setAuthError(
+        "Invalid Google Client ID. Use OAuth Web Client ID ending with .apps.googleusercontent.com"
+      );
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadGoogleScript = () => {
+      if (window.google?.accounts?.id) {
+        initializeGoogle(clientId);
+        return;
+      }
+
+      const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existing) {
+        existing.addEventListener("load", () => initializeGoogle(clientId), { once: true });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initializeGoogle(clientId);
+      document.body.appendChild(script);
+    };
+
+    const initializeGoogle = (cid) => {
+      if (cancelled || !window.google?.accounts?.id || !googleBtnRef.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: cid,
+        callback: async (response) => {
+          try {
+            setAuthError("");
+            setIsGoogleLoading(true);
+
+            const data = await googleSignIn(response.credential);
+            localStorage.setItem("token", data.access_token);
+            navigate("/home");
+          } catch (err) {
+            setAuthError(err.message || "Google sign-in failed");
+          } finally {
+            setIsGoogleLoading(false);
+          }
+        },
+      });
+
+      googleBtnRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        width: 320,
+      });
+    };
+
+    loadGoogleScript();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleClientId, hasValidGoogleClientId, navigate]);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black text-white overflow-hidden">
@@ -81,9 +158,57 @@ export default function AuthPage() {
 
           
           <div className="flex gap-4">
-            <SocialBtn text="Google" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <GoogleIcon />
+                Google
+              </div>
+              <div ref={googleBtnRef} className="min-h-[40px]" />
+              {!googleClientId && (
+                <button
+                  type="button"
+                  onClick={() => setAuthError("Set VITE_GOOGLE_CLIENT_ID in frontend env to enable Google sign-in.")}
+                  className="w-full py-2 border border-gray-600 rounded-lg hover:bg-white/10 transition flex items-center justify-center gap-2"
+                >
+                  <GoogleIcon />
+                  Sign in with Google
+                </button>
+              )}
+              {googleClientId && !hasValidGoogleClientId && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAuthError(
+                      "OAuth config error (GeneralOAuthFlow). Replace client secret with Web Client ID in frontend and backend env."
+                    )
+                  }
+                  className="w-full py-2 border border-amber-500/60 rounded-lg hover:bg-amber-500/10 transition flex items-center justify-center gap-2 text-amber-200"
+                >
+                  <GoogleIcon />
+                  Fix Google OAuth Config
+                </button>
+              )}
+              {!googleClientId && (
+                <p className="text-xs text-yellow-300 mt-2">
+                  Set VITE_GOOGLE_CLIENT_ID in frontend env to enable Google sign-in.
+                </p>
+              )}
+              {googleClientId && !hasValidGoogleClientId && (
+                <p className="text-xs text-amber-300 mt-2">
+                  Current value is not a Web Client ID. It must end with .apps.googleusercontent.com
+                </p>
+              )}
+            </div>
             <SocialBtn text="GitHub" />
           </div>
+
+          {isGoogleLoading && (
+            <p className="text-sm text-blue-300">Signing in with Google...</p>
+          )}
+
+          {authError && (
+            <p className="text-sm text-red-400">{authError}</p>
+          )}
         </div>
 
         <p className="text-sm text-center mt-6 text-gray-400">
@@ -97,6 +222,14 @@ export default function AuthPage() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6.1-2.8-6.1-6.2s2.8-6.2 6.1-6.2c1.9 0 3.2.8 3.9 1.5l2.7-2.7C17.2 2.9 14.8 2 12 2 6.9 2 2.8 6.2 2.8 11.3S6.9 20.6 12 20.6c6.9 0 9.2-4.8 9.2-7.3 0-.5-.1-.9-.1-1.3H12z" />
+    </svg>
   );
 }
 

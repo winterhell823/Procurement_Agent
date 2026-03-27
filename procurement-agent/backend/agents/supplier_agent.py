@@ -16,7 +16,7 @@ import uuid
 
 from agents.form_agent import handle_complex_form
 from services.tinyfish_client import TinyFishClient
-from services.llm_service import extract_quote_from_html, parse_price_text
+from services.llm_service import extract_quote_from_html
 
 
 async def run_supplier_agent(

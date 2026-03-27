@@ -150,3 +150,23 @@ class EmailService:
 
 # Global singleton instance (like other services)
 email_service = EmailService()
+
+
+async def send_order_email(
+    to_email: str,
+    subject: str,
+    body: str,
+    from_name: Optional[str] = None,
+    from_email: Optional[str] = None,
+) -> dict:
+    """Compatibility helper for order workflow email fallback."""
+    if not to_email:
+        return {"success": False, "error": "Missing supplier recipient email"}
+
+    ok = await email_service.send_email(
+        to_emails=[to_email],
+        subject=subject,
+        plain_text=body,
+        from_email=from_email,
+    )
+    return {"success": ok, "error": None if ok else "Failed to send email"}

@@ -82,7 +82,13 @@ async def create_procurement(
     await db.refresh(proc)
 
     # Fire AI pipeline asynchronously
-    background_tasks.add_task(run_procurement_pipeline, str(proc.id))
+    background_tasks.add_task(
+        run_procurement_pipeline,
+        proc.id,
+        body.raw_description,
+        current_user.id,
+        None,
+    )
 
     return ProcurementOut.from_orm_fmt(proc)
 

@@ -150,3 +150,88 @@ Return ONLY JSON:
 
 # Global instance (like tinyfish_client)
 llm_service = LLMService()
+
+
+async def extract_quote_from_html(html_content: str, product_spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Best-effort quote extraction from raw HTML using the configured LLM service."""
+    if llm_service.client is None:
+        return None
+
+    prompt = f"""
+Extract quote information from this supplier page HTML.
+
+Product spec:
+{json.dumps(product_spec)}
+
+HTML:
+{html_content[:15000]}
+
+Return ONLY JSON:
+{{
+  "price_per_unit": float or null,
+  "total_price": float or null,
+  "currency": str or null,
+  "delivery_days": int or null,
+  "quote_reference": str or null,
+  "raw_data": dict
+}}
+"""
+
+    try:
+        response = await llm_service.client.chat.completions.create(
+            model=llm_service.model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=500,
+        )
+        content = (response.choices[0].message.content or "").strip()
+        if content.startswith("```json"):
+            content = content.split("```json", 1)[1].split("```", 1)[0].strip()
+        parsed = json.loads(content)
+        if not isinstance(parsed, dict):
+            return None
+        parsed.setdefault("raw_data", {})
+        return parsed
+    except Exception:
+        return None
+
+
+async def summarize_results(ranked_quotes: List[Dict[str, Any]], spec: Dict[str, Any]) -> str:
+    """Generate a short human-readable summary for completed procurement runs."""
+    if not ranked_quotes:
+        return "No quotes were received from suppliers."
+
+    top = ranked_quotes[0]
+    product = spec.get("product_name") or "requested product"
+
+    if llm_service.client is None:
+        return (
+            f"Received {len(ranked_quotes)} quotes for {product}. "
+            f"Best option is {top.get('supplier_name', 'Unknown supplier')} "
+            f"at {top.get('currency', 'USD')} {top.get('total_price', 'N/A')}."
+        )
+
+    prompt = f"""
+Create a short 2-3 sentence procurement summary for the user.
+
+Product spec:
+{json.dumps(spec)}
+
+Ranked quotes:
+{json.dumps(ranked_quotes[:5])}
+"""
+
+    try:
+        response = await llm_service.client.chat.completions.create(
+            model=llm_service.model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=180,
+        )
+        return (response.choices[0].message.content or "").strip() or "Quotes processed successfully."
+    except Exception:
+        return (
+            f"Received {len(ranked_quotes)} quotes for {product}. "
+            f"Top quote: {top.get('supplier_name', 'Unknown supplier')} "
+            f"at {top.get('currency', 'USD')} {top.get('total_price', 'N/A')}."
+        )

@@ -5,7 +5,10 @@ export default function AINetwork() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     let width = canvas.offsetWidth;
     let height = canvas.offsetHeight;
@@ -15,11 +18,13 @@ export default function AINetwork() {
 
     let mouse = { x: width / 2, y: height / 2 };
 
-    window.addEventListener("mousemove", (e) => {
+    const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
       mouse.x = e.clientX - rect.left;
       mouse.y = e.clientY - rect.top;
-    });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
 
     const nodes = Array.from({ length: 40 }).map(() => ({
       x: Math.random() * width,
@@ -27,6 +32,8 @@ export default function AINetwork() {
       vx: (Math.random() - 0.5) * 0.7,
       vy: (Math.random() - 0.5) * 0.7,
     }));
+
+    let frameId = null;
 
     function draw() {
       ctx.clearRect(0, 0, width, height);
@@ -73,10 +80,15 @@ export default function AINetwork() {
         }
       });
 
-      requestAnimationFrame(draw);
+      frameId = requestAnimationFrame(draw);
     }
 
     draw();
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (frameId) cancelAnimationFrame(frameId);
+    };
   }, []);
 
   return (
