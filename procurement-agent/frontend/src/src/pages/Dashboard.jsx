@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { motion } from "framer-motion";
 import { FaPlus, FaDollarSign, FaClipboardList, FaChartBar } from "react-icons/fa";
 
-////////////////////////////////////////////////////
+const navigate =useNaviagte();
+
 
 const stats = [
   { title: "Total Savings", value: "$290.25", icon: <FaDollarSign /> },
@@ -17,14 +19,14 @@ const quotes = [
   { name: "GloveMfg", price: "$5.45", time: "10 days", status: "Average" },
 ];
 
-////////////////////////////////////////////////////
+
 
 export default function Homepage() {
   return (
     <DashboardLayout>
       <div className="px-10 mt-8">
 
-        {/* 🔥 HEADER */}
+        
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Procurement Homepage</h1>
@@ -33,12 +35,15 @@ export default function Homepage() {
             </p>
           </div>
 
-          <button className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:scale-105 transition">
-            <FaPlus /> New Request
-          </button>
+          <button
+          onClick={() => navigate("/new-request")}
+              className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:scale-105 transition"
+>
+               <FaPlus /> New Request
+              </button>
         </div>
 
-        {/* 🔥 STATS */}
+        
         <div className="grid md:grid-cols-3 gap-6 mt-8">
           {stats.map((s, i) => (
             <motion.div
