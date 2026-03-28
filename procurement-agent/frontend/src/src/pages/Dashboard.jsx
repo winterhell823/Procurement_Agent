@@ -3,7 +3,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import { motion } from "framer-motion";
 import { FaPlus, FaDollarSign, FaClipboardList, FaChartBar } from "react-icons/fa";
 
-const navigate =useNaviagte();
+
 
 
 const stats = [
@@ -22,6 +22,7 @@ const quotes = [
 
 
 export default function Homepage() {
+  const navigate = useNavigate();
   return (
     <DashboardLayout>
       <div className="px-10 mt-8">
