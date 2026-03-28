@@ -10,7 +10,7 @@ export default function Homepage() {
   return (
     <DashboardLayout>
       <div className="bg-[#0b0f17] text-white min-h-screen">
-        {/* NAVBAR */}
+        
         <nav className="flex justify-between items-center px-8 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 text-lg font-semibold">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">

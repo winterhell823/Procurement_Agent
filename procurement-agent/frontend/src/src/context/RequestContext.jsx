@@ -1,47 +1,34 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 
 const RequestContext = createContext();
 
-export const RequestProvider = ({ children }) => {
-  
-  const [requests, setRequests] = useState(() => {
-    const saved = localStorage.getItem("requests");
-    return saved ? JSON.parse(saved) : [];
-  });
+export function RequestProvider({ children }) {
+  const [requests, setRequests] = useState([]);
 
-  useEffect(() => {
-    localStorage.setItem("requests", JSON.stringify(requests));
-  }, [requests]);
-
-  
   const addRequest = (data) => {
     const newRequest = {
       id: Date.now(),
       title: data.title,
       quantity: data.quantity,
-      extra: data.extra,
       status: "processing",
-      date: new Date().toLocaleString(),
       supplier: null,
       price: null,
-      unit: null,
     };
 
-    setRequests((prev) => [newRequest, ...prev]);
+    setRequests((prev) => [...prev, newRequest]);
 
-    
+   
     setTimeout(() => {
       setRequests((prev) =>
-        prev.map((r) =>
-          r.id === newRequest.id
+        prev.map((req) =>
+          req.id === newRequest.id
             ? {
-                ...r,
+                ...req,
                 status: "completed",
-                supplier: "AI Supplier Co.",
-                price: "$" + (Math.random() * 500).toFixed(2),
-                unit: "$" + (Math.random() * 2).toFixed(2) + "/unit",
+                supplier: "ABC Supplies",
+                price: "$" + (Math.floor(Math.random() * 500) + 100),
               }
-            : r
+            : req
         )
       );
     }, 3000);
@@ -52,6 +39,14 @@ export const RequestProvider = ({ children }) => {
       {children}
     </RequestContext.Provider>
   );
-};
+}
 
-export const useRequest = () => useContext(RequestContext);
+export const useRequests = () => {
+  const context = useContext(RequestContext);
+
+  if (!context) {
+    throw new Error("useRequests must be used inside RequestProvider");
+  }
+
+  return context;
+};
