@@ -5,15 +5,15 @@ import io
 from datetime import datetime
 from typing import Literal
 
-def generate_csv(quotes: list[dict], prodect_name: str) -> bytes:
+def generate_csv(quotes: list[dict], product_name: str) -> bytes:
     output = io.StringIO()
 
     fieldnames = [
         "Rank",
         "Supplier Name",
-        "website",
-        "Unit Price",
-        "Total Price",
+        "Website",
+        "Unit Price (INR)",
+        "Total Price (INR)",
         "Delivery Days",
         "Min Order Qty",
         "Payment Terms",

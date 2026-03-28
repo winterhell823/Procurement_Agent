@@ -1,7 +1,9 @@
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RequestProvider } from "./context/RequestContext";
 import { Toaster } from "react-hot-toast";
 
+// Pages
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
@@ -9,14 +11,17 @@ import Dashboard from "./pages/Dashboard";
 import NewRequest from "./pages/NewRequest";
 
 
+
+
 const isAuthenticated = () => {
-  return localStorage.getItem("user"); 
+  return localStorage.getItem("user");
 };
 
 
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/auth" />;
 }
+
 
 
 export default function App() {
@@ -35,6 +40,7 @@ export default function App() {
           
           <Route path="/home" element={<Homepage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/landing" element={<LandingPage />} />
 
           
           <Route
@@ -56,7 +62,14 @@ export default function App() {
           />
 
           
-          <Route path="*" element={<h1 className="text-white p-10">404 Not Found</h1>} />
+          <Route
+            path="*"
+            element={
+              <div className="text-white flex items-center justify-center h-screen text-2xl">
+                404 - Page Not Found
+              </div>
+            }
+          />
 
         </Routes>
 

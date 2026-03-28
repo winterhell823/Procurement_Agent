@@ -62,7 +62,7 @@ def _create_token(user_id: str) -> str:
     return jwt.encode(
         {"sub": user_id, "exp": expire},
         settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM,
+        algorithm=settings.JWT_ALGORITHM,
     )
 
 
@@ -77,7 +77,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exc
@@ -157,14 +157,16 @@ async def update_profile(
     await db.refresh(current_user)
     return current_user
 
-@router.post("/google", response_model=TokenResponse)
 class GoogleLoginRequest(BaseModel):
     token: str
+
+
+@router.post("/google", response_model=TokenResponse)
 async def google_login(
     body: GoogleLoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    token = body.get("token")
+    token = body.token
 
     if not token:
         raise HTTPException(status_code=400, detail="Token missing")
@@ -180,13 +182,19 @@ async def google_login(
     if not user:
         user = User(
             email=user_data["email"],
-            full_name=user_data.get("name"),
+            full_name=user_data.get("name") or user_data["email"].split("@")[0],
             hashed_password=None,
-            auth_provider="google"
+            google_id=user_data.get("google_id"),
+            picture=user_data.get("picture"),
         )
         db.add(user)
         await db.commit()
         await db.refresh(user)
+    else:
+        # Backfill Google profile data for existing users.
+        user.google_id = user.google_id or user_data.get("google_id")
+        user.picture = user_data.get("picture") or user.picture
+        await db.commit()
 
     # Generate JWT
     access_token = _create_token(str(user.id))

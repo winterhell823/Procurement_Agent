@@ -15,7 +15,6 @@ sendgrid
 google-auth
 requests
 email-validator
-python-multipart
 
 # Feature 2 — Excel export
 openpyxl==3.1.5
@@ -25,6 +24,3 @@ APScheduler==3.10.4
 
 # Feature 1 — WhatsApp (Twilio)
 twilio==9.3.3
-
-# tinyfish API
-tinyfish

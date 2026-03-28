@@ -1,6 +1,7 @@
 import asyncio
 import uuid
 import time
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -20,13 +21,14 @@ from services.reliability_service import record_quote_attempt    # Feature 10
 from services.validity_service import create_validity_record     # Feature 5
 from models.procurement import ProcurementStatus
 from models.user import User
+from models.base import AsyncSessionLocal
 
 
 async def run_procurement_pipeline(
     procurement_id:  uuid.UUID,
     raw_description: str,
     user_id:         uuid.UUID,
-    db:              AsyncSession
+    db:              Optional[AsyncSession]
 ) -> dict:
     """
     Master pipeline — runs end to end:
@@ -42,13 +44,17 @@ async def run_procurement_pipeline(
     10. Return summary
     """
 
+    owns_session = db is None
+    if db is None:
+        db = AsyncSessionLocal()
+
     async def log(message: str):
         await append_agent_log(procurement_id, message, db)
 
     try:
         # STEP 1: Parse spec
         await update_procurement_status(
-            procurement_id, ProcurementStatus.PARSING,
+            procurement_id, ProcurementStatus.SEARCHING,
             "Parsing product specification...", db
         )
         await log("🧠 Parsing your product description...")
@@ -75,7 +81,7 @@ async def run_procurement_pipeline(
 
         # STEP 3: Match suppliers
         await update_procurement_status(
-            procurement_id, ProcurementStatus.RUNNING,
+            procurement_id, ProcurementStatus.SEARCHING,
             "Finding suppliers...", db
         )
         suppliers = await match_suppliers(spec["category"], user_id, db, limit=5)
@@ -189,6 +195,9 @@ async def run_procurement_pipeline(
     except Exception as e:
         await log(f"❌ Pipeline failed: {str(e)}")
         await update_procurement_status(
-            procurement_id, ProcurementStatus.FAILED, str(e), db
+            procurement_id, ProcurementStatus.CANCELLED, str(e), db
         )
         raise
+    finally:
+        if owns_session:
+            await db.close()

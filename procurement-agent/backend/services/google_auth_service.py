@@ -9,6 +9,12 @@ def verify_google_token(token: str):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="GOOGLE_CLIENT_ID not set")
 
+    if ".apps.googleusercontent.com" not in GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=500,
+            detail="GOOGLE_CLIENT_ID looks invalid. Use the OAuth Web Client ID, not the client secret.",
+        )
+
     try:
         idinfo = id_token.verify_oauth2_token(
             token,

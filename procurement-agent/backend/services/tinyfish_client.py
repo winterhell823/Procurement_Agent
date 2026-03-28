@@ -9,7 +9,10 @@ import logging
 from typing import Dict, Any, AsyncGenerator, Optional, Callable
 from datetime import datetime
 
-from tinyfish import TinyFish, EventType, RunStatus  # pip install tinyfish
+try:
+    from tinyfish import TinyFish  # pip install tinyfish
+except ImportError:  # pragma: no cover - optional dependency in local/dev setups
+    TinyFish = None
 from config import settings
 # from .llm_service import clean_extraction_with_llm  # We'll add later — optional cleanup
 
@@ -23,6 +26,10 @@ class TinyFishClient:
 
     def __init__(self):
         """Initialize TinyFish client (API key from env via pydantic settings)."""
+        if TinyFish is None:
+            raise ImportError(
+                "tinyfish SDK is not installed. Install it before running supplier agents."
+            )
         if not settings.TINYFISH_API_KEY:
             raise ValueError("TINYFISH_API_KEY not set in environment/config")
         
