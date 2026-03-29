@@ -1,18 +1,60 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { googleSignIn } from "../services/api";
+import toast from "react-hot-toast";
+import { googleSignIn, login, register } from "../services/api";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [authError, setAuthError] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const googleBtnRef = useRef(null);
   const navigate = useNavigate();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const hasValidGoogleClientId =
     typeof googleClientId === "string" &&
     googleClientId.trim().endsWith(".apps.googleusercontent.com");
+
+  // Handle email/password authentication
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    try {
+      setAuthError("");
+      setSubmitLoading(true);
+
+      if (!email || !password || (!isLogin && !fullName)) {
+        throw new Error("Please fill all required fields");
+      }
+
+      if (!isLogin && password !== confirmPassword) {
+        throw new Error("Passwords do not match");
+      }
+
+      let response;
+      if (isLogin) {
+        response = await login(email, password);
+      } else {
+        await register(email, password, fullName);
+        response = await login(email, password);
+      }
+
+      localStorage.setItem("token", response.access_token);
+      localStorage.setItem("user", JSON.stringify({ email, fullName }));
+      toast.success(isLogin ? "Logged in! 🎉" : "Account created! 🚀");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Authentication Error:", err);
+      setAuthError(err.message || "Authentication failed");
+      toast.error(err.message || "Authentication failed");
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   useEffect(() => {
     const clientId = googleClientId?.trim();
@@ -117,16 +159,44 @@ export default function AuthPage() {
             : "Automate your sourcing with AI"}
         </p>
 
-        <div className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-4">
 
-          {!isLogin && <Input placeholder="Company Name" />}
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full p-3 rounded-xl bg-black/40 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+            />
+          )}
 
-          <Input placeholder="Email" type="email" />
-          <Input placeholder="Password" type="password" />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-3 rounded-xl bg-black/40 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 rounded-xl bg-black/40 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+          />
 
-          {!isLogin && <Input placeholder="Confirm Password" type="password" />}
+          {!isLogin && (
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 rounded-xl bg-black/40 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+            />
+          )}
 
-          
+
           {isLogin && (
             <div className="flex justify-between text-sm text-gray-400">
               <label className="flex items-center gap-2">
@@ -139,14 +209,15 @@ export default function AuthPage() {
             </div>
           )}
 
-          
+
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => navigate("/home")}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg hover:shadow-blue-500/30 transition"
+            type="submit"
+            disabled={submitLoading}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg hover:shadow-blue-500/30 transition disabled:opacity-50"
           >
-            {isLogin ? "Sign In" : "Register"}
+            {submitLoading ? "Processing..." : (isLogin ? "Sign In" : "Register")}
           </motion.button>
 
           
@@ -209,7 +280,7 @@ export default function AuthPage() {
           {authError && (
             <p className="text-sm text-red-400">{authError}</p>
           )}
-        </div>
+        </form>
 
         <p className="text-sm text-center mt-6 text-gray-400">
           {isLogin ? "No account?" : "Already have one?"}

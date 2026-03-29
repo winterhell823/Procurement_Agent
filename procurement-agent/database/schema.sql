@@ -18,11 +18,6 @@ CREATE TABLE IF NOT EXISTS users (
     -- Feature 1: notification channels
     phone_number      VARCHAR(50),
     telegram_chat_id  VARCHAR(100),
-
-    -- Google Sign-In fields (NEW)
-    google_id         VARCHAR(255) UNIQUE,
-    picture           VARCHAR(500),
-
     is_active         BOOLEAN DEFAULT TRUE,
     created_at        TIMESTAMP DEFAULT NOW(),
     updated_at        TIMESTAMP DEFAULT NOW()
@@ -152,12 +147,3 @@ CREATE INDEX IF NOT EXISTS idx_validity_user        ON quote_validity(user_id);
 CREATE INDEX IF NOT EXISTS idx_validity_expires     ON quote_validity(expires_at);
 CREATE INDEX IF NOT EXISTS idx_orders_user          ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_scores_supplier      ON supplier_scores(supplier_name);
--- Google OAuth index for fast lookup during sign-in
-CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
-
--- Google OAuth fields for Google Sign-In
-ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS picture VARCHAR(500);
-
--- Index for faster Google login
-CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);

@@ -1,41 +1,61 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { getProcurementRequests, createProcurementRequest } from "../services/api";
 
 const RequestContext = createContext();
 
 export function RequestProvider({ children }) {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const addRequest = (data) => {
-    const newRequest = {
-      id: Date.now(),
-      title: data.title,
-      quantity: data.quantity,
-      status: "processing",
-      supplier: null,
-      price: null,
-    };
+  // Fetch requests from backend
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getProcurementRequests();
+      setRequests(data || []);
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to fetch requests:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setRequests((prev) => [...prev, newRequest]);
+  // Load requests on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchRequests();
+    }
+  }, []);
 
-   
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === newRequest.id
-            ? {
-                ...req,
-                status: "completed",
-                supplier: "ABC Supplies",
-                price: "$" + (Math.floor(Math.random() * 500) + 100),
-              }
-            : req
-        )
-      );
-    }, 3000);
+  // Add new request
+  const addRequest = async (data) => {
+    try {
+      setError(null);
+      const newRequest = await createProcurementRequest(data);
+      // Add to local state immediately for responsiveness
+      setRequests((prev) => [newRequest, ...prev]);
+      return newRequest;
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to create request:", err);
+      throw err;
+    }
   };
 
   return (
-    <RequestContext.Provider value={{ requests, addRequest }}>
+    <RequestContext.Provider
+      value={{
+        requests,
+        loading,
+        error,
+        addRequest,
+        fetchRequests,
+      }}
+    >
       {children}
     </RequestContext.Provider>
   );
