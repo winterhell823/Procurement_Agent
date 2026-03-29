@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import { motion } from "framer-motion";
@@ -7,6 +7,7 @@ import {
   FaDollarSign,
   FaClipboardList,
   FaChartBar,
+  FaRobot,
 } from "react-icons/fa";
 import { useRequests } from "../context/RequestContext";
 
@@ -25,10 +26,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { requests = [], loading, fetchRequests } = useRequests();
 
-  // Refresh data on mount
-  useEffect(() => {
+  // Optimized fetch wrapper
+  const handleFetch = useCallback(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  // Refresh data on mount
+  useEffect(() => {
+    handleFetch();
+  }, [handleFetch]);
 
   const stats = [
     {
@@ -163,7 +169,7 @@ export default function Dashboard() {
 
 
 
-function RequestCard({ id, raw_description, quantity, product_name, status }) {
+const RequestCard = memo(({ id, raw_description, quantity, product_name, status }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -184,15 +190,17 @@ function RequestCard({ id, raw_description, quantity, product_name, status }) {
       </div>
     </motion.div>
   );
-}
+});
 
 
-function ProcessingCard({ id, raw_description, quantity, product_name, status }) {
+const ProcessingCard = memo(({ id, raw_description, quantity, product_name, status }) => {
+  const navigate = useNavigate();
   return (
     <motion.div
+      onClick={() => navigate(`/agent/${id}`)}
       animate={{ opacity: [0.5, 1, 0.5] }}
-      transition={{ repeat: Infinity, duration: 2 }}
-      className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10"
+      transition={{ repeat: 1, duration: 2 }}
+      className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all"
     >
       <span className="text-yellow-400 text-sm">⏳ {status}</span>
 
@@ -200,9 +208,12 @@ function ProcessingCard({ id, raw_description, quantity, product_name, status })
       <p className="text-gray-400 text-sm">{raw_description}</p>
       <p className="text-gray-500 text-xs mt-2">Qty: {quantity}</p>
 
-      <p className="mt-4 text-blue-400 text-sm">
-        🤖 AI is searching suppliers...
-      </p>
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-blue-400 text-sm flex items-center gap-1.5">
+          <FaRobot /> AI is searching suppliers...
+        </p>
+        <span className="text-[10px] text-gray-600 uppercase tracking-widest font-mono">Click to view agent live status &gt;</span>
+      </div>
     </motion.div>
   );
-}
+});

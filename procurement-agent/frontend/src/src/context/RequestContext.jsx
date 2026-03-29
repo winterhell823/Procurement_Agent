@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { getProcurementRequests, createProcurementRequest } from "../services/api";
 
 const RequestContext = createContext();
@@ -9,7 +9,7 @@ export function RequestProvider({ children }) {
   const [error, setError] = useState(null);
 
   // Fetch requests from backend
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -21,7 +21,7 @@ export function RequestProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load requests on mount
   useEffect(() => {

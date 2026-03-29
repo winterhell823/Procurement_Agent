@@ -39,6 +39,8 @@ class ProcurementRequest(Base):
     status          = Column(PgEnum(ProcurementStatus), default=ProcurementStatus.PENDING, nullable=False)
     notes           = Column(String(2000), nullable=True)
 
+    agent_logs      = Column(JSON, default=list, nullable=True)
+
     created_at      = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

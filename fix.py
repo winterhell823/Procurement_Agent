@@ -1,4 +1,6 @@
-import uuid
+import sys
+
+code = """import uuid
 import logging
 from typing import List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,3 +27,7 @@ async def match_suppliers(category: str, user_id: uuid.UUID, db: AsyncSession, l
         supplier_dicts.append(supplier_dict)
         
     return supplier_dicts[:limit]
+"""
+
+with open("procurement-agent/backend/engine/supplier_matcher.py", "w") as f:
+    f.write(code)

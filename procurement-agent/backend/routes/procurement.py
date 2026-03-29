@@ -35,6 +35,7 @@ class ProcurementOut(BaseModel):
     parsed_spec:     Optional[dict]
     notes:           Optional[str]
     created_at:      str
+    logs:            list = []
 
     class Config:
         from_attributes = True
@@ -53,6 +54,7 @@ class ProcurementOut(BaseModel):
             parsed_spec=p.parsed_spec,
             notes=p.notes,
             created_at=p.created_at.isoformat(),
+            logs=p.agent_logs or []
         )
 
 

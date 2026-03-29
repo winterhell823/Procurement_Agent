@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS procurement_requests (
     deadline          VARCHAR(100),
     status            VARCHAR(50) DEFAULT 'pending',
     status_message    TEXT,
-    agent_log         JSONB DEFAULT '[]',
+    agent_logs        JSONB DEFAULT '[]',
     created_at        TIMESTAMP DEFAULT NOW(),
     updated_at        TIMESTAMP DEFAULT NOW()
 );

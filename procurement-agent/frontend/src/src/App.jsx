@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RequestProvider } from "./context/RequestContext";
+import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 
 
@@ -9,6 +10,7 @@ import AuthPage from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
 import Dashboard from "./pages/Dashboard";
 import NewRequest from "./pages/NewRequest";
+import AgentPage from "./pages/AgentPage";
 
 
 const isAuthenticated = () => {
@@ -22,8 +24,9 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <RequestProvider>
-      <BrowserRouter>
+    <AuthProvider>
+      <RequestProvider>
+        <BrowserRouter>
 
         <Toaster position="top-right" />
 
@@ -55,6 +58,15 @@ export default function App() {
             }
           />
 
+          <Route
+            path="/agent/:procurementId"
+            element={
+              <ProtectedRoute>
+                <AgentPage />
+              </ProtectedRoute>
+            }
+          />
+
         
           <Route
             path="*"
@@ -69,5 +81,6 @@ export default function App() {
 
       </BrowserRouter>
     </RequestProvider>
+  </AuthProvider>
   );
 }

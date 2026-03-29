@@ -6,15 +6,12 @@ Uses official tinyfish SDK which reads TINYFISH_API_KEY from env via config.
 
 import json
 import logging
+import httpx
+import asyncio
 from typing import Dict, Any, AsyncGenerator, Optional, Callable
 from datetime import datetime
 
-try:
-    from tinyfish import TinyFish  # pip install tinyfish
-except ImportError:  # pragma: no cover - optional dependency in local/dev setups
-    TinyFish = None
 from config import settings
-# from .llm_service import clean_extraction_with_llm  # We'll add later — optional cleanup
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +23,11 @@ class TinyFishClient:
 
     def __init__(self):
         """Initialize TinyFish client (API key from env via pydantic settings)."""
-        if TinyFish is None:
-            raise ImportError(
-                "tinyfish SDK is not installed. Install it before running supplier agents."
-            )
         if not settings.TINYFISH_API_KEY:
             raise ValueError("TINYFISH_API_KEY not set in environment/config")
         
-        self.client = TinyFish()  # Auto-loads TINYFISH_API_KEY
+        self.api_key = settings.TINYFISH_API_KEY
+        self.base_url = settings.TINYFISH_BASE_URL
         logger.info("TinyFish client initialized")
 
     async def run_quote_task_stream(
@@ -41,7 +35,7 @@ class TinyFishClient:
         supplier: Dict,
         product_spec: Dict,
         contact_info: Dict,
-        procurement_id: str,  # for logging/context
+        procurement_id: str,
         on_progress: Optional[Callable[[str], None]] = None
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
@@ -95,57 +89,86 @@ No other text outside the JSON.
         logger.info(f"Starting TinyFish stream for supplier {supplier_name} | procurement {procurement_id}")
 
         try:
-            async with self.client.agent.stream(
-                url=start_url,
-                goal=goal.strip(),
-                # timeout=300,  # seconds — if supported, add later
-            ) as stream:
-                async for event in stream:
-                    event_type = event.get("type")
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "Accept": "text/event-stream"
+            }
+            payload = {
+                "url": start_url,
+                "goal": goal.strip(),
+            }
+            
+            async with httpx.AsyncClient() as client:
+                # We use httpx stream to simulate hitting the real TinyFish endpoint
+                async with client.stream(
+                    "POST", 
+                    f"{self.base_url}/v1/agent/stream", 
+                    headers=headers, 
+                    json=payload, 
+                    timeout=300.0
+                ) as stream:
+                    if stream.status_code != 200:
+                        err_text = await stream.aread()
+                        raise Exception(f"TinyFish API error ({stream.status_code}): {err_text.decode('utf-8')}")
+                        
+                    async for line in stream.aiter_lines():
+                        if not line.strip() or line.startswith(":"):
+                            continue
+                        
+                        data_str = line
+                        if line.startswith("data:"):
+                            data_str = line[5:].strip()
+                            
+                        if data_str == "[DONE]":
+                            break
+                            
+                        try:
+                            event = json.loads(data_str)
+                        except json.JSONDecodeError:
+                            continue
 
-                    if on_progress:
-                        if event_type in ["step", "action", "thinking"]:
-                            on_progress(f"{supplier_name}: {event.get('message', 'Processing...')}")
+                        event_type = event.get("type", event.get("event"))
 
-                    yield {
-                        "type": event_type,
-                        "status": event.get("status"),
-                        "message": event.get("message", ""),
-                        "step": event.get("step"),
-                    }
-
-                    if event_type == "COMPLETE":
-                        raw_result = event.get("result", {})
-                        if isinstance(raw_result, str):
-                            try:
-                                raw_result = json.loads(raw_result)
-                            except:
-                                raw_result = {"raw_text": raw_result}
-
-                        # Optional: clean/refine with LLM later
-                        # cleaned = await clean_extraction_with_llm(raw_result)
-
-                        final_quote = {
-                            "supplier_name": supplier_name,
-                            "supplier_url": start_url,
-                            "price_per_unit": raw_result.get("unit_price"),
-                            "total_price": raw_result.get("total_price"),
-                            "currency": raw_result.get("currency", "USD"),
-                            "delivery_days": raw_result.get("delivery_days"),
-                            "quote_reference": raw_result.get("quote_id"),
-                            "notes": raw_result.get("notes") or raw_result.get("error"),
-                            "status": "received" if raw_result.get("success") else "failed",
-                            "raw_data": raw_result,
-                            "extraction_method": "tinyfish",
-                            # Add screenshot/quote_url if TinyFish returns media
-                        }
+                        if on_progress:
+                            if event_type in ["step", "action", "thinking"]:
+                                on_progress(f"{supplier_name}: {event.get('message', 'Processing...')}")
 
                         yield {
-                            "type": "complete",
-                            "quote": final_quote,
-                            "success": raw_result.get("success", False)
+                            "type": event_type,
+                            "status": event.get("status"),
+                            "message": event.get("message", ""),
+                            "step": event.get("step"),
                         }
-                        return
+
+                        if event_type == "COMPLETE":
+                            raw_result = event.get("result", {})
+                            if isinstance(raw_result, str):
+                                try:
+                                    raw_result = json.loads(raw_result)
+                                except:
+                                    raw_result = {"raw_text": raw_result}
+
+                            final_quote = {
+                                "supplier_name": supplier_name,
+                                "supplier_url": start_url,
+                                "price_per_unit": raw_result.get("unit_price"),
+                                "total_price": raw_result.get("total_price"),
+                                "currency": raw_result.get("currency", "USD"),
+                                "delivery_days": raw_result.get("delivery_days"),
+                                "quote_reference": raw_result.get("quote_id"),
+                                "notes": raw_result.get("notes") or raw_result.get("error"),
+                                "status": "received" if raw_result.get("success") else "failed",
+                                "raw_data": raw_result,
+                                "extraction_method": "tinyfish",
+                            }
+
+                            yield {
+                                "type": "complete",
+                                "quote": final_quote,
+                                "success": raw_result.get("success", False)
+                            }
+                            return
 
         except Exception as e:
             logger.error(f"TinyFish error for {supplier_name}: {str(e)}")
